@@ -1,0 +1,85 @@
+trigger:
+- main
+
+pool:
+  name: Default # Nome do agent pool
+  demands:
+    - Agent.Name -equals mbanuvem-agent  # 🔁 Força o uso do agente específico - substitua pelo nome do Agent criado
+
+  #vmImage: 'windows-latest'
+
+variables:
+  location: 'westus2'
+  resourceGroupName: 'mba-resourcegroup1'
+  vmName: 'vm-mbanuvem-03'
+  templateFile: 'vm-iis-template.json'
+  parametersFile: 'vm-iis-parameters.json'
+  indexUrl: 'https://raw.githubusercontent.com/profll001/IAAS/refs/heads/main/src/index.html'
+  scriptUrl: 'https://raw.githubusercontent.com/profll001/IAAS/refs/heads/main/src/scripts/site.ps1'
+
+stages:
+- stage: DeployInfra
+  displayName: 'Provisionar Infraestrutura'
+  jobs:
+  - job: Deploy
+    displayName: 'Criar RG e recursos ARM'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Criar Resource Group'
+      inputs:
+        azureSubscription: 'MBA01'  # 🔁 Substitua pelo nome do Service Connection criado
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az group create --name $(resourceGroupName) --location $(location)
+
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: 'Deploy ARM Template'
+      inputs:
+        deploymentScope: 'Resource Group'
+        azureResourceManagerConnection: 'MBA01'  # 🔁 Substitua pelo nome do Service Connection criado
+        action: 'Create Or Update Resource Group'
+        resourceGroupName: '$(resourceGroupName)'
+        location: '$(location)'
+        templateLocation: 'Linked artifact'
+        csmFile: 'arm-templates/vm-iis-template.json'
+        csmParametersFile: 'arm-templates/vm-iis-parameters.json'
+        deploymentMode: 'Incremental'
+        deploymentName: 'vm-iis-deployment'
+
+- stage: ConfigureWebsite
+  displayName: 'Publicar site no IIS'
+  dependsOn: DeployInfra
+  jobs:
+  - job: PublishHTML
+    displayName: 'Executar CustomScriptExtension para copiar index.html'
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Executar CustomScriptExtension'
+      inputs:
+        azureSubscription: 'MBA01'  # 🔁 Substitua pelo nome do Service Connection criado
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          $vmName = '$(vmName)'
+          $resourceGroup = '$(resourceGroupName)'
+          $scriptUrl = '$(scriptUrl)'
+
+          # Define o conteúdo JSON como um objeto PowerShell
+          $settings = @{
+            fileUris = @($scriptUrl)
+            commandToExecute = "powershell -ExecutionPolicy Unrestricted -File site.ps1"
+          }
+
+          # Converte para JSON válido e salva em um arquivo temporário no agente
+          $jsonFile = "customScriptSettings.json"
+          $settings | ConvertTo-Json -Depth 3 | Out-File -FilePath $jsonFile -Encoding ascii
+
+          # Executa a extensão passando o caminho do arquivo JSON
+          az vm extension set `
+            --resource-group $resourceGroup `
+            --vm-name $vmName `
+            --name CustomScriptExtension `
+            --publisher Microsoft.Compute `
+            --settings @$jsonFile # Usa @ para indicar que é um caminho de arquivo
+  # fim
