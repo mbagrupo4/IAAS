@@ -33,7 +33,7 @@ stages:
         templateLocation: 'Linked artifact'
         csmFile: 'vm-iis-template.json'
         csmParametersFile: 'vm-iis-parameters.json'
-        deploymentMode: 'Incremental'
+        deploymentMode: 'Complete'
         deploymentName: 'vm-iis-deployment'
 
 - stage: ConfigureWebsite
