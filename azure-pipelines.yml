@@ -6,8 +6,6 @@ pool:
   demands:
     - Agent.Name -equals mbanuvem-agent  # 🔁 Força o uso do agente específico - substitua pelo nome do Agent criado
 
-  #vmImage: 'windows-latest'
-
 variables:
   location: 'westus2'
   resourceGroupName: 'mba-resourcegroup1'
@@ -22,17 +20,8 @@ stages:
   displayName: 'Provisionar Infraestrutura'
   jobs:
   - job: Deploy
-    displayName: 'Criar RG e recursos ARM'
+    displayName: 'Deploy ARM Template'
     steps:
-    - task: AzureCLI@2
-      displayName: 'Criar Resource Group'
-      inputs:
-        azureSubscription: 'MBA01'  # 🔁 Substitua pelo nome do Service Connection criado
-        scriptType: 'ps'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az group create --name $(resourceGroupName) --location $(location)
-
     - task: AzureResourceManagerTemplateDeployment@3
       displayName: 'Deploy ARM Template'
       inputs:
@@ -81,5 +70,4 @@ stages:
             --vm-name $vmName `
             --name CustomScriptExtension `
             --publisher Microsoft.Compute `
-            --settings @$jsonFile # Usa @ para indicar que é um caminho de arquivo
-  # fim
+            --settings @$jsonFile
