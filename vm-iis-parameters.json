@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceGroupName": {
+            "value": "rg-iac-web-iis"
+        },
+        "vmName": {
+            "value": "vm-iac-web-iis"
+        },
+        "location": {
+            "value": "WestUS2"
+        },
+        "adminUsername": {
+            "value": "iacadmin"
+        },
+        "adminPassword": {
+            "value": "SuaSenhaSeguraAqui123!"
+        },
+        "vmSku": {
+            "value": "Standard_D2s_v3"
+        },
+        "windowsOSVersion": {
+            "value": "2022-datacenter-azure-edition"
+        }
+    }
+}
