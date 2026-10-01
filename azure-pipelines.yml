@@ -9,9 +9,9 @@ pool:
   #vmImage: 'windows-latest'
 
 variables:
-  location: 'westus2'
-  resourceGroupName: 'mba-resourcegroup1'
-  vmName: 'vm-mbanuvem-03'
+  location: 'westus3'
+  resourceGroupName: 'rg-iac-web-iis'
+  vmName: 'vm-iac-web-iis'
   templateFile: 'vm-iis-template.json'
   parametersFile: 'vm-iis-parameters.json'
   indexUrl: 'https://raw.githubusercontent.com/profll001/IAAS/refs/heads/main/src/index.html'
@@ -42,8 +42,8 @@ stages:
         resourceGroupName: '$(resourceGroupName)'
         location: '$(location)'
         templateLocation: 'Linked artifact'
-        csmFile: 'vm-iis-template.json'
-        csmParametersFile: 'vm-iis-parameters.json'
+        csmFile: 'arm-templates/vm-iis-template.json'
+        csmParametersFile: 'arm-templates/vm-iis-parameters.json'
         deploymentMode: 'Incremental'
         deploymentName: 'vm-iis-deployment'
 
