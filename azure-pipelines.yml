@@ -9,8 +9,8 @@ pool:
   #vmImage: 'windows-latest'
 
 variables:
-  location: 'westus2'
-  resourceGroupName: 'rg-iac-web-iis'
+  location: 'westus3'
+  resourceGroupName: 'rg-iac-web-iis2'
   vmName: 'vm-iac-web-iis'
   templateFile: 'vm-iis-template.json'
   parametersFile: 'vm-iis-parameters.json'
